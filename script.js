@@ -38,7 +38,8 @@ sendButton.onclick = async () => {
   formData.append("audio", audioBlob);
 
   // ✅ Correct Replit endpoint (your real one)
-  const endpoint = "https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/";
+const endpoint = "https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/transcribe";
+
   status.textContent = "📤 Enviando para o servidor...";
 
   try {
