@@ -37,8 +37,8 @@ sendButton.onclick = async () => {
   const formData = new FormData();
   formData.append("audio", audioBlob);
 
-  // ✅ Correct endpoint from Replit
- const endpoint = "https://whisper-proxy.sandraluciavarg.repl.co/transcribe";
+  // ✅ Correct Replit endpoint (your real one)
+  const endpoint = "https://whisper-proxy.sandraluciavarg.repl.co/transcribe";
   status.textContent = "📤 Enviando para o servidor...";
 
   try {
