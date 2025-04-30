@@ -23,57 +23,39 @@ recordButton.onclick = async () => {
   status.textContent = "🎙️ Gravando...";
   recordButton.disabled = true;
   stopButton.disabled = false;
-  sendButton.disabled = true;
 };
 
 stopButton.onclick = () => {
   mediaRecorder.stop();
-  status.textContent = "⏹️ Gravação finalizada";
+  status.textContent = "✅ Gravação finalizada.";
   recordButton.disabled = false;
   stopButton.disabled = true;
 };
 
 sendButton.onclick = async () => {
-  status.textContent = "⏳ Enviando...";
-  const blob = new Blob(audioChunks, { type: "audio/mp3" });
+  const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
   const formData = new FormData();
-  formData.append("file", blob, "audio.mp3");
+  formData.append("audio", audioBlob);
+
+  // ✅ Correct endpoint from Replit
+  const endpoint = "https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/transcribe";
+  status.textContent = "📤 Enviando para o servidor...";
 
   try {
-    const uploadResponse = await fetch("https://file.io", {
+    const response = await fetch(endpoint, {
       method: "POST",
       body: formData,
     });
 
-    const uploadData = await uploadResponse.json();
-
-    if (!uploadData.success) {
-      throw new Error("Falha no upload: " + uploadData.message);
-    }
-
-    const audioUrl = uploadData.link;
-
-    // 🔁 ENVIA PARA O GPT VIA ACTION
-    const response = await fetch(
-      "https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/transcribe",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ audioUrl }),
-      }
-    );
-
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error("Erro da API: " + errorText);
+      throw new Error(`Erro HTTP ${response.status}: ${errorText}`);
     }
 
-    status.textContent = "✅ Enviado com sucesso!";
-    sendButton.disabled = true;
+    const result = await response.json();
+    status.textContent = `📄 Transcrição: ${result.text}`;
   } catch (error) {
-    status.innerHTML =
-      "❌ <b>Erro de rede:</b> " + (error.message || "Falha desconhecida");
+    console.error("Erro ao enviar áudio:", error);
+    status.textContent = `❌ Erro de rede: ${error.message}`;
   }
 };
