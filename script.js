@@ -17,54 +17,63 @@ recordButton.onclick = async () => {
 
   mediaRecorder.onstop = () => {
     sendButton.disabled = false;
-    status.textContent = "✅ Gravação finalizada!";
   };
 
   mediaRecorder.start();
   status.textContent = "🎙️ Gravando...";
   recordButton.disabled = true;
   stopButton.disabled = false;
+  sendButton.disabled = true;
 };
 
 stopButton.onclick = () => {
   mediaRecorder.stop();
-  stopButton.disabled = true;
+  status.textContent = "⏹️ Gravação finalizada";
   recordButton.disabled = false;
+  stopButton.disabled = true;
 };
 
 sendButton.onclick = async () => {
-  const blob = new Blob(audioChunks, { type: "audio/mp3" });
-  const file = new File([blob], `audio-${Date.now()}.mp3`, { type: "audio/mp3" });
-
-  const formData = new FormData();
-  formData.append("file", file);
-
   status.textContent = "⏳ Enviando...";
+  const blob = new Blob(audioChunks, { type: "audio/mp3" });
+  const formData = new FormData();
+  formData.append("file", blob, "audio.mp3");
 
   try {
-    const response = await fetch("https://whisper-proxy.sandraluciavarg.repl.co/transcribe", {
+    const uploadResponse = await fetch("https://file.io", {
       method: "POST",
       body: formData,
     });
 
+    const uploadData = await uploadResponse.json();
+
+    if (!uploadData.success) {
+      throw new Error("Falha no upload: " + uploadData.message);
+    }
+
+    const audioUrl = uploadData.link;
+
+    // 🔁 ENVIA PARA O GPT VIA ACTION
+    const response = await fetch(
+      "https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/transcribe",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ audioUrl }),
+      }
+    );
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Resposta do servidor com erro:", response.status, errorText);
-      status.textContent = `❌ Erro ${response.status}: ${errorText}`;
-      return;
+      throw new Error("Erro da API: " + errorText);
     }
 
-    const data = await response.json();
-
-    if (data && data.text) {
-      window.opener.postMessage({ transcription: data.text }, "*");
-      window.close();
-    } else {
-      status.textContent = "❌ Erro: resposta sem transcrição.";
-      console.warn("Resposta recebida mas sem texto:", data);
-    }
+    status.textContent = "✅ Enviado com sucesso!";
+    sendButton.disabled = true;
   } catch (error) {
-    console.error("Erro na conexão com o servidor:", error);
-    status.textContent = `❌ Erro de rede: ${error.message}`;
+    status.innerHTML =
+      "❌ <b>Erro de rede:</b> " + (error.message || "Falha desconhecida");
   }
 };
