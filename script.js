@@ -34,10 +34,8 @@ stopButton.onclick = () => {
 
 sendButton.onclick = async () => {
   const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-  const file = new File([audioBlob], "recording.webm", { type: "audio/webm" });
-
   const formData = new FormData();
-  formData.append("audio", file);
+  formData.append("audio", audioBlob);
 
   const endpoint = "https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/transcribe";
   status.textContent = "📤 Enviando para o servidor...";
@@ -54,7 +52,20 @@ sendButton.onclick = async () => {
     }
 
     const result = await response.json();
-    status.textContent = `📄 Transcrição: ${result.text}`;
+    const textoTranscrito = result.text;
+    status.textContent = `📄 Transcrição: ${textoTranscrito}`;
+
+    // 🔄 Enviar transcrição para o Custom GPT via Actions
+    // Isso simula o que a Action recebe quando configurada com YAML
+    window.parent.postMessage(
+      {
+        event: "custom_action_input",
+        payload: {
+          text: textoTranscrito
+        }
+      },
+      "*"
+    );
   } catch (error) {
     console.error("Erro ao enviar áudio:", error);
     status.textContent = `❌ Erro de rede: ${error.message}`;
