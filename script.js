@@ -34,12 +34,12 @@ stopButton.onclick = () => {
 
 sendButton.onclick = async () => {
   const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+  const file = new File([audioBlob], "recording.webm", { type: "audio/webm" });
+
   const formData = new FormData();
-  formData.append("audio", audioBlob);
+  formData.append("audio", file);
 
-  // ✅ Correct Replit endpoint (your real one)
-const endpoint = "https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/transcribe";
-
+  const endpoint = "https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/transcribe";
   status.textContent = "📤 Enviando para o servidor...";
 
   try {
