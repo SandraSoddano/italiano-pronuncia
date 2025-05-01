@@ -1,41 +1,7 @@
-const recordButton = document.getElementById("record");
-const stopButton = document.getElementById("stop");
-const sendButton = document.getElementById("send");
-const status = document.getElementById("status");
-
-let mediaRecorder;
-let audioChunks = [];
-
-recordButton.onclick = async () => {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  mediaRecorder = new MediaRecorder(stream);
-  audioChunks = [];
-
-  mediaRecorder.ondataavailable = (e) => {
-    audioChunks.push(e.data);
-  };
-
-  mediaRecorder.onstop = () => {
-    sendButton.disabled = false;
-  };
-
-  mediaRecorder.start();
-  status.textContent = "🎙️ Gravando...";
-  recordButton.disabled = true;
-  stopButton.disabled = false;
-};
-
-stopButton.onclick = () => {
-  mediaRecorder.stop();
-  status.textContent = "✅ Gravação finalizada.";
-  recordButton.disabled = false;
-  stopButton.disabled = true;
-};
-
 sendButton.onclick = async () => {
   const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
   const formData = new FormData();
-  formData.append("file", audioBlob);
+  formData.append("file", audioBlob);  // ✅ Must match Multer
 
   const endpoint = "https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/transcribe";
   status.textContent = "📤 Enviando para o servidor...";
@@ -52,20 +18,7 @@ sendButton.onclick = async () => {
     }
 
     const result = await response.json();
-    const textoTranscrito = result.text;
-    status.textContent = `📄 Transcrição: ${textoTranscrito}`;
-
-    // 🔄 Enviar transcrição para o Custom GPT via Actions
-    // Isso simula o que a Action recebe quando configurada com YAML
-    window.parent.postMessage(
-      {
-        event: "custom_action_input",
-        payload: {
-          text: textoTranscrito
-        }
-      },
-      "*"
-    );
+    status.textContent = `📄 Transcrição: ${result.text}`;
   } catch (error) {
     console.error("Erro ao enviar áudio:", error);
     status.textContent = `❌ Erro de rede: ${error.message}`;
