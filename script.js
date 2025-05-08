@@ -1,64 +1,46 @@
-const recordButton = document.getElementById("record");
-const stopButton = document.getElementById("stop");
-const sendButton = document.getElementById("send");
-const status = document.getElementById("status");
-
 let mediaRecorder;
 let audioChunks = [];
 
-recordButton.onclick = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    audioChunks = [];
+document.getElementById("record").addEventListener("click", async () => {
+  audioChunks = [];  // Limpa qualquer gravação anterior
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  mediaRecorder = new MediaRecorder(stream);
 
-    mediaRecorder.ondataavailable = (e) => {
-      audioChunks.push(e.data);
-    };
+  mediaRecorder.ondataavailable = event => {
+    audioChunks.push(event.data);
+  };
 
-    mediaRecorder.onstop = () => {
-      sendButton.disabled = false;
-    };
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(audioChunks, { type: "audio/webm" });
+    const formData = new FormData();
+    formData.append("file", blob);
 
-    mediaRecorder.start();
-    status.textContent = "🎙️ Gravando...";
-    recordButton.disabled = true;
-    stopButton.disabled = false;
-  } catch (error) {
-    status.textContent = "❌ Erro ao acessar microfone: " + error.message;
-  }
-};
-
-stopButton.onclick = () => {
-  mediaRecorder.stop();
-  status.textContent = "✅ Gravação finalizada.";
-  recordButton.disabled = false;
-  stopButton.disabled = true;
-};
-
-sendButton.onclick = async () => {
-  const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-  const formData = new FormData();
-  formData.append("file", audioBlob, "recording.webm");
-
-  const endpoint = "https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/transcribe";
-  status.textContent = "📤 Enviando para o servidor...";
-
-  try {
-    const response = await fetch(endpoint, {
+    // Enviar para o servidor
+    fetch("https://d54d82ee-5ce0-4d3c-9659-20a95a01db60-00-3joywglwuhfi4.worf.replit.dev/transcribe", {
       method: "POST",
-      body: formData,
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById("status").textContent = `📝 Transcrição: ${data.text}`;
+    })
+    .catch(error => {
+      document.getElementById("status").textContent = `⚠️ Erro: ${error.message || "Erro ao enviar o áudio."}`;
+      console.error(error);
     });
+  };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Erro HTTP ${response.status}: ${errorText}`);
-    }
+  mediaRecorder.start();
+  document.getElementById("record").disabled = true;
+  document.getElementById("stop").disabled = false;
+  document.getElementById("send").disabled = true;
+  document.getElementById("status").textContent = "🎙️ Gravando...";
+});
 
-    const result = await response.json();
-    status.textContent = `📄 Transcrição: ${result.text}`;
-  } catch (error) {
-    console.error("Erro ao enviar áudio:", error);
-    status.textContent = `❌ Erro de rede: ${error.message}`;
-  }
-};
+document.getElementById("stop").addEventListener("click", () => {
+  mediaRecorder.stop();
+  document.getElementById("record").disabled = false;
+  document.getElementById("stop").disabled = true;
+  document.getElementById("send").disabled = false;
+  document.getElementById("status").textContent = "🛑 Gravação finalizada. Pronto para enviar.";
+});
