@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -7,11 +7,30 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>🎙️ Italiano Fácil com Sandy – Grave sua voz - Speark&SparkleTM</h2>
-  <button id="record">🎤 Gravar</button>
-  <button id="stop" disabled>🛑 Parar</button>
-  <button id="send" disabled>➡️ Enviar para GPT</button>
-  <p id="status"></p>
+  <h2>🎙️ Grave sua Voz com Sandy</h2>
+
+  <div class="recorder">
+    <button id="record">🎤 Gravar</button>
+    <button id="stop" disabled>🛑 Parar</button>
+    <button id="send" disabled>➡️ Enviar para Sandy</button>
+    <p id="status"></p>
+  </div>
+
+  <div class="instructions">
+    <h3>📋 Instruções:</h3>
+    <ol>
+      <li>Clique em <strong>Gravar</strong> e fale a frase em italiano que deseja praticar.</li>
+      <li>Quando terminar, clique em <strong>Parar</strong>.</li>
+      <li>Em seguida, clique em <strong>Enviar para Sandy</strong> para enviar o áudio.</li>
+      <li>Volte para a Sandy e escreva <strong>"Pronto"</strong> para receber o feedback.</li>
+      <li>Se a Sandy pedir para confirmar a conexão, confirme para garantir que ela consiga acessar seu arquivo.</li>
+    </ol>
+    <p>⚠️ Dica: Se algo não funcionar como esperado, tente repetir o processo e garantir que seu microfone está funcionando corretamente.</p>
+  </div>
+
+  <footer>
+    <p>© 2025 Speak&Sparkle™ - Criado com ❤️ por Sandra Soddano</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
